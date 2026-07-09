@@ -1,0 +1,94 @@
+-- =========================================================
+-- MÓDULO DE SEGURIDAD (Autenticación y Autorización)
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS roles (
+    rol_id SERIAL PRIMARY KEY,
+    rol_nombre VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS funciones (
+    fun_id SERIAL PRIMARY KEY,
+    fun_nombre VARCHAR(100) NOT NULL
+);
+
+-- Tabla intermedia para el menú dinámico
+CREATE TABLE IF NOT EXISTS roles_funciones (
+    rof_rol_id INT NOT NULL,
+    rof_fun_id INT NOT NULL,
+    PRIMARY KEY (rof_rol_id, rof_fun_id),
+    FOREIGN KEY (rof_rol_id) REFERENCES roles(rol_id) ON DELETE CASCADE,
+    FOREIGN KEY (rof_fun_id) REFERENCES funciones(fun_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    usu_id SERIAL PRIMARY KEY,
+    usu_username VARCHAR(100) NOT NULL UNIQUE,
+    usu_password VARCHAR(255) NOT NULL, -- Contraseña sin hash según solicitud
+    usu_rol_id INT NOT NULL,
+    FOREIGN KEY (usu_rol_id) REFERENCES roles(rol_id) ON DELETE RESTRICT
+);
+
+-- =========================================================
+-- MÓDULO DE NEGOCIO (Gestión de Eventos)
+-- =========================================================
+
+-- Catálogo 1: Asistentes
+CREATE TABLE IF NOT EXISTS asistentes (
+    asi_id SERIAL PRIMARY KEY,
+    asi_identificacion VARCHAR(50) NOT NULL UNIQUE,
+    asi_nombre VARCHAR(200) NOT NULL,
+    asi_email VARCHAR(150) NOT NULL UNIQUE
+);
+
+-- Catálogo 2: Eventos
+CREATE TABLE IF NOT EXISTS eventos (
+    eve_id SERIAL PRIMARY KEY,
+    eve_nombre VARCHAR(200) NOT NULL,
+    eve_fecha_inicio TIMESTAMP NOT NULL,
+    eve_capacidad INT NOT NULL,
+    eve_ubicacion VARCHAR(255),
+    eve_estado VARCHAR(50) DEFAULT 'Activo' -- Para validación de evento activo (PBI-23)
+);
+
+-- Transaccional Cabecera: Registro Evento
+CREATE TABLE IF NOT EXISTS registro_evento (
+    reg_id SERIAL PRIMARY KEY,
+    reg_fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reg_asi_id INT NOT NULL,
+    FOREIGN KEY (reg_asi_id) REFERENCES asistentes(asi_id) ON DELETE RESTRICT
+);
+
+-- Transaccional Detalle: Asistencias
+CREATE TABLE IF NOT EXISTS asistencias (
+    ase_id SERIAL PRIMARY KEY,
+    ase_reg_id INT NOT NULL,
+    ase_eve_id INT NOT NULL,
+    ase_estado VARCHAR(50) DEFAULT 'Inscrito',
+    FOREIGN KEY (ase_reg_id) REFERENCES registro_evento(reg_id) ON DELETE CASCADE,
+    FOREIGN KEY (ase_eve_id) REFERENCES eventos(eve_id) ON DELETE RESTRICT
+);
+
+-- =========================================================
+-- DATOS SEMILLA (SEEDS)
+-- =========================================================
+
+INSERT INTO roles (rol_nombre) VALUES ('Admin'), ('Operativo')
+ON CONFLICT (rol_nombre) DO NOTHING;
+
+INSERT INTO funciones (fun_nombre) VALUES 
+('CRUD Asistentes'),
+('CRUD Eventos'),
+('Registro Transaccional'),
+('Reportes')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO roles_funciones (rof_rol_id, rof_fun_id) VALUES 
+(1, 1), (1, 2), (1, 3), (1, 4),
+(2, 1), (2, 3)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO usuarios (usu_username, usu_password, usu_rol_id) VALUES
+('admin', 'admin123', 1),
+('operador', '123456', 2)
+ON CONFLICT (usu_username) DO NOTHING;
