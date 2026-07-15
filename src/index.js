@@ -1,8 +1,8 @@
 // Package
 import express from 'express';
-//import routes from './modules/pizzas/routes.js';
-//import ingredientsRoutes from './modules/ingredients/routes.js';
-//import pizzaIngredientsRoutes from './modules/pizza_ingredients/routes.js';
+import authRoutes from './modules/auth/routes.js';
+import usuariosRoutes from './modules/usuarios/routes.js';
+import rolesRoutes from './modules/roles/routes.js';
 
 const app = express();
 const PORT = 6767;
@@ -14,9 +14,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-//app.use('/pizzas', routes);
-//app.use('/ingredients', ingredientsRoutes);
-//app.use('/pizza-ingredients', pizzaIngredientsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/roles', rolesRoutes);
 
 // Esto nos dice que cuando se haga una solicitud GET a la raíz ('/'), se ejecutará esta función que envía un mensaje de bienvenida como respuesta.
 app.get('/', (req, res) => {
