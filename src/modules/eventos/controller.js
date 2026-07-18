@@ -39,3 +39,39 @@ export async function listarEventos(req, res) {
     return res.status(500).json({ mensaje: 'Error al listar eventos', error: error.message });
   }
 }
+
+export async function crearEvento(req, res) {
+  try {
+    const { nombre, fecha_inicio, capacidad, ubicacion } = req.body;
+
+    // Validación de campos obligatorios
+    if (!nombre || !fecha_inicio || capacidad === undefined || !ubicacion) {
+      return res.status(400).json({ mensaje: 'nombre, fecha_inicio, capacidad y ubicacion son requeridos' });
+    }
+
+    // Validar cupo > 0
+    if (Number(capacidad) <= 0) {
+      return res.status(400).json({ mensaje: 'La capacidad (cupo) debe ser mayor a 0' });
+    }
+
+    // Validar fecha coherente (no en el pasado)
+    const fechaEvento = new Date(fecha_inicio);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Ignorar la hora para comparar solo fecha
+    
+    if (fechaEvento < hoy) {
+      return res.status(400).json({ mensaje: 'La fecha de inicio no puede estar en el pasado' });
+    }
+
+    const evento = await db.one(
+      `INSERT INTO eventos (eve_nombre, eve_fecha_inicio, eve_capacidad, eve_ubicacion)
+       VALUES ($1, $2, $3, $4)
+       RETURNING ${CAMPOS}`,
+      [nombre, fecha_inicio, capacidad, ubicacion]
+    );
+
+    return res.status(201).json(evento);
+  } catch (error) {
+    return res.status(500).json({ mensaje: 'Error al crear evento', error: error.message });
+  }
+}
