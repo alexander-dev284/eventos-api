@@ -1,38 +1,39 @@
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import db from '../../config/database.js';
 
 export async function login(req, res) {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ mensaje: 'Email y contraseña son requeridos' });
+    if (!username || !password) {
+      return res.status(400).json({ mensaje: 'username y password son requeridos' });
     }
 
     const usuario = await db.oneOrNone(
-      `SELECT usuarios.id, usuarios.nombres, usuarios.apellidos, usuarios.email,
-              usuarios.password, usuarios.rol_id AS "rolId", roles.nombre AS "rolNombre"
+      `SELECT usuarios.usu_id AS id, usuarios.usu_username AS username, usuarios.usu_password AS password,
+              usuarios.usu_rol_id AS "rolId", roles.rol_nombre AS "rolNombre"
        FROM usuarios
-       JOIN roles ON roles.id = usuarios.rol_id
-       WHERE usuarios.email = $1 AND usuarios.activo = TRUE`,
-      [email]
+       JOIN roles ON roles.rol_id = usuarios.usu_rol_id
+       WHERE usuarios.usu_username = $1`,
+      [username]
     );
 
-    if (!usuario) {
+    if (!usuario || usuario.password !== password) {
       return res.status(401).json({ mensaje: 'Credenciales inválidas' });
     }
 
-    const passwordValido = await bcrypt.compare(password, usuario.password);
-
-    if (!passwordValido) {
-      return res.status(401).json({ mensaje: 'Credenciales inválidas' });
-    }
+    const funciones = await db.any(
+      `SELECT funciones.fun_nombre AS nombre
+       FROM roles_funciones
+       JOIN funciones ON funciones.fun_id = roles_funciones.rof_fun_id
+       WHERE roles_funciones.rof_rol_id = $1`,
+      [usuario.rolId]
+    );
 
     const token = jwt.sign(
       {
         id: usuario.id,
-        email: usuario.email,
+        username: usuario.username,
         rolId: usuario.rolId,
         rolNombre: usuario.rolNombre,
       },
@@ -44,10 +45,9 @@ export async function login(req, res) {
       token,
       usuario: {
         id: usuario.id,
-        nombres: usuario.nombres,
-        apellidos: usuario.apellidos,
-        email: usuario.email,
+        username: usuario.username,
         rol: usuario.rolNombre,
+        funciones: funciones.map((f) => f.nombre),
       },
     });
   } catch (error) {
