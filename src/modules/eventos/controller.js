@@ -75,3 +75,61 @@ export async function crearEvento(req, res) {
     return res.status(500).json({ mensaje: 'Error al crear evento', error: error.message });
   }
 }
+
+export async function editarEvento(req, res) {
+  try {
+    const { nombre, fecha_inicio, capacidad, ubicacion } = req.body;
+    
+    // Validar cupo > 0 si lo envian
+    if (capacidad !== undefined && Number(capacidad) <= 0) {
+      return res.status(400).json({ mensaje: 'La capacidad (cupo) debe ser mayor a 0' });
+    }
+
+    // Validar fecha coherente si la envian
+    if (fecha_inicio) {
+      const fechaEvento = new Date(fecha_inicio);
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      
+      if (fechaEvento < hoy) {
+        return res.status(400).json({ mensaje: 'La fecha de inicio no puede estar en el pasado' });
+      }
+    }
+
+    const evento = await db.oneOrNone(
+      `UPDATE eventos
+       SET eve_nombre = COALESCE($1, eve_nombre),
+           eve_fecha_inicio = COALESCE($2, eve_fecha_inicio),
+           eve_capacidad = COALESCE($3, eve_capacidad),
+           eve_ubicacion = COALESCE($4, eve_ubicacion)
+       WHERE eve_id = $5
+       RETURNING ${CAMPOS}`,
+      [nombre ?? null, fecha_inicio ?? null, capacidad ?? null, ubicacion ?? null, req.params.id]
+    );
+
+    if (!evento) {
+      return res.status(404).json({ mensaje: 'Evento no encontrado' });
+    }
+
+    return res.json(evento);
+  } catch (error) {
+    return res.status(500).json({ mensaje: 'Error al editar evento', error: error.message });
+  }
+}
+
+export async function eliminarEvento(req, res) {
+  try {
+    const resultado = await db.result('DELETE FROM eventos WHERE eve_id = $1', [req.params.id]);
+
+    if (resultado.rowCount === 0) {
+      return res.status(404).json({ mensaje: 'Evento no encontrado' });
+    }
+
+    return res.status(204).send();
+  } catch (error) {
+    if (error.code === '23503') {
+      return res.status(409).json({ mensaje: 'No se puede eliminar: el evento tiene inscripciones registradas' });
+    }
+    return res.status(500).json({ mensaje: 'Error al eliminar evento', error: error.message });
+  }
+}
