@@ -19,12 +19,14 @@ export function verificarToken(req, res, next) {
 }
 
 export function autorizarRoles(...rolesPermitidos) {
+  const rolesNormalizados = rolesPermitidos.map((rol) => rol.toLowerCase());
+
   return (req, res, next) => {
     if (!req.usuario) {
       return res.status(401).json({ mensaje: 'No autenticado' });
     }
 
-    if (!rolesPermitidos.includes(req.usuario.rolNombre)) {
+    if (!rolesNormalizados.includes(req.usuario.rolNombre?.toLowerCase())) {
       return res.status(403).json({ mensaje: 'No tiene permisos para esta acción' });
     }
 
