@@ -3,6 +3,8 @@ import express from 'express';
 import authRoutes from './modules/auth/routes.js';
 import usuariosRoutes from './modules/usuarios/routes.js';
 import rolesRoutes from './modules/roles/routes.js';
+import funcionesRoutes from './modules/funciones/routes.js';
+import asistentesRoutes from './modules/asistentes/routes.js';
 
 const app = express();
 const PORT = 6767;
@@ -17,6 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/roles', rolesRoutes);
+app.use('/api/funciones', funcionesRoutes);
+app.use('/api/asistentes', asistentesRoutes);
 
 // Esto nos dice que cuando se haga una solicitud GET a la raíz ('/'), se ejecutará esta función que envía un mensaje de bienvenida como respuesta.
 app.get('/', (req, res) => {
