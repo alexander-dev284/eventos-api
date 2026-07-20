@@ -46,7 +46,7 @@ export async function crearInscripcionTransaccional(req, res) {
       // 2. Validaciones de negocio por evento (PBI-23)
       for (const eveId of eventosIds) {
         const evento = await t.oneOrNone(
-          'SELECT eve_id, eve_nombre, eve_capacidad, eve_fecha_inicio, eve_estado FROM eventos WHERE eve_id = $1',
+          'SELECT eve_id, eve_nombre, eve_capacidad, eve_fecha_inicio FROM eventos WHERE eve_id = $1',
           [eveId]
         );
 
@@ -59,9 +59,8 @@ export async function crearInscripcionTransaccional(req, res) {
         // Validar si el evento está activo (o fecha inicio no pasada)
         const fechaEvento = new Date(evento.eve_fecha_inicio);
         const hoy = new Date();
-        const estaInactivo = evento.eve_estado && evento.eve_estado.toLowerCase() !== 'activo';
 
-        if (estaInactivo || fechaEvento < hoy) {
+        if (fechaEvento < hoy) {
           erroresItems.push({
             eve_id: eveId,
             evento: evento.eve_nombre,

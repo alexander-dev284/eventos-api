@@ -18,6 +18,13 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
+// Servir archivos estáticos del frontend sin almacenamiento en caché (Cache-Control: no-store)
+app.use(express.static('vistas', {
+    setHeaders: (res, path) => {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    }
+}));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
