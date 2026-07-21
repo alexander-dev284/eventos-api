@@ -5,9 +5,10 @@ import { verificarToken, autorizarRoles } from '../../middlewares/auth.middlewar
 const router = Router();
 
 router.use(verificarToken);
-router.use(autorizarRoles('ADMIN'));
 
 router.get('/', listarEventos);
+
+router.use(autorizarRoles('ADMIN'));
 router.post('/', crearEvento);
 router.put('/:id', editarEvento);
 router.delete('/:id', eliminarEvento);

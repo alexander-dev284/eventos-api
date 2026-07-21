@@ -11,6 +11,9 @@ const state = {
   registros: []
 };
 
+// Preserve original sidebar HTML to allow dynamic rebuilds
+let ORIGINAL_SIDEBAR_HTML = null;
+
 // CONSTANTS
 const API_URL = ''; 
 
@@ -18,6 +21,9 @@ const API_URL = '';
 document.addEventListener('DOMContentLoaded', () => {
   setupGlobalEventListeners();
   updateCurrentDate();
+  // capture original sidebar template for later restoration
+  const sidebar = document.querySelector('.sidebar-nav');
+  if (sidebar) ORIGINAL_SIDEBAR_HTML = sidebar.innerHTML;
   if (state.token && state.usuario) {
     showDashboard();
   } else {
@@ -99,13 +105,21 @@ async function apiRequest(endpoint, options = {}) {
   };
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401) {
       if (state.token) {
         showToast('Sesión Caducada', 'Inicie sesión de nuevo', 'warning');
         handleLogout();
       }
       const data = await response.json();
-      throw new Error(data.mensaje || 'Acceso denegado');
+      throw new Error(data.mensaje || 'No autorizado');
+    }
+    if (response.status === 403) {
+      const data = await response.json();
+      showToast('Acceso Denegado', data.mensaje || 'No tiene permisos para esta acción', 'warning');
+      const error = new Error(data.mensaje || 'Prohibido');
+      error.status = 403;
+      toggleLoader(false);
+      throw error;
     }
     if (response.status === 204) {
       toggleLoader(false);
@@ -182,26 +196,55 @@ function showDashboard() {
 }
 
 function getAuthorizedTabs() {
-  const funciones = state.usuario.funciones || [];
-  const list = [];
-  if (funciones.includes('CRUD Asistentes')) list.push('asistentes');
-  if (funciones.includes('CRUD Eventos')) list.push('eventos');
-  if (funciones.includes('Registro Transaccional')) list.push('registros');
-  if (funciones.includes('Reportes')) list.push('reportes');
-  return list;
+  const funciones = (state.usuario && state.usuario.funciones) || [];
+  const mapping = {
+    'CRUD Asistentes': 'asistentes',
+    'CRUD Eventos': 'eventos',
+    'Registro Transaccional': 'registros',
+    'Reportes': 'reportes'
+  };
+  const set = new Set();
+  funciones.forEach(f => {
+    const tab = mapping[f];
+    if (tab) set.add(tab);
+  });
+  return Array.from(set);
 }
 
 function configureMenuByRoles() {
   const tabs = getAuthorizedTabs();
-  $('navAsistentes').style.display = tabs.includes('asistentes') ? 'flex' : 'none';
-  $('navEventos').style.display = tabs.includes('eventos') ? 'flex' : 'none';
-  $('navRegistros').style.display = tabs.includes('registros') ? 'flex' : 'none';
-  $('navReportes').style.display = tabs.includes('reportes') ? 'flex' : 'none';
+  const sidebar = document.querySelector('.sidebar-nav');
+  if (!sidebar) return;
+  // restore original menu structure so changes are idempotent
+  if (ORIGINAL_SIDEBAR_HTML) sidebar.innerHTML = ORIGINAL_SIDEBAR_HTML;
+
+  // remove items that the user is not authorized to see
+  sidebar.querySelectorAll('li').forEach(li => {
+    const tab = li.getAttribute('data-tab');
+    if (!tabs.includes(tab)) {
+      li.remove();
+    }
+  });
+  // reattach click listeners to remaining items (we may have replaced the DOM)
+  sidebar.querySelectorAll('li').forEach(item => {
+    // remove existing listener by cloning node to avoid duplicate handlers
+    const newItem = item.cloneNode(true);
+    item.replaceWith(newItem);
+    newItem.addEventListener('click', (e) => {
+      const tab = e.currentTarget.getAttribute('data-tab');
+      switchTab(tab);
+    });
+  });
 }
 
 // TAB SWITCHING
 async function switchTab(tabId) {
   state.activeTab = tabId;
+  const authorizedTabs = getAuthorizedTabs();
+  if (authorizedTabs.length > 0 && !authorizedTabs.includes(tabId)) {
+    showToast('Acceso Denegado', 'No tiene permisos para esta sección', 'warning');
+    return;
+  }
   document.querySelectorAll('.sidebar-nav li').forEach(item => {
     item.classList.toggle('active', item.getAttribute('data-tab') === tabId);
   });
