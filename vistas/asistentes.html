@@ -1,0 +1,26 @@
+<div class="d-flex justify-content-between align-items-center mb-4 gap-3">
+  <div class="flex-grow-1" style="max-width: 320px;">
+    <input type="text" id="searchAsistente" class="form-control" placeholder="Buscar asistente...">
+  </div>
+  <button class="btn btn-primary d-flex align-items-center gap-2 fw-semibold" id="btnNuevoAsistente">
+    <span>➕</span> Nuevo Asistente
+  </button>
+</div>
+<div class="card border border-secondary-subtle bg-body-tertiary shadow p-0 overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle m-0">
+      <thead>
+        <tr class="table-active small text-uppercase text-secondary">
+          <th class="ps-4">ID</th>
+          <th>Identificación</th>
+          <th>Nombre Completo</th>
+          <th>Correo Electrónico</th>
+          <th class="text-end pe-4">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="asistentesTableBody">
+        <!-- Carga dinámica -->
+      </tbody>
+    </table>
+  </div>
+</div>
