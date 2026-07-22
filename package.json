@@ -10,7 +10,9 @@
     "test:backend": "node scripts/tests/test_backend.js",
     "test:menu": "node scripts/tests/test_menu_dynamic.js",
     "test:transaccional": "node scripts/tests/test_transaccion_registros.js",
-    "test:api": "node scripts/tests/test-api.js"
+    "test:api": "node scripts/tests/test-api.js",
+    "test:operativo-forbidden": "node scripts/tests/test-operativo-forbidden.js"
+    
   },
   "keywords": [],
   "author": "Victor Imbaquingo, Alex Espinoza, Gabriel Miño, Jorge Miranda, Kevin Villalba",

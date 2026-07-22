@@ -1,0 +1,24 @@
+LOGIN status: 200
+Login response: {
+  token: '<TOKEN REDACTADO>',
+  usuario: {
+    id: 2,
+    username: 'operador',
+    rol: 'Operativo',
+    funciones: [ 'CRUD Asistentes', 'Registro Transaccional' ]
+  }
+}
+Decoded JWT payload: {
+  id: 2,
+  username: 'operador',
+  rolId: 2,
+  rolNombre: 'Operativo',
+  iat: <timestamp>,
+  exp: <timestamp>
+}
+
+DELETE /api/eventos/1 status: 403
+Response body: { mensaje: 'No tiene permisos para esta acción' }
+
+GET /api/usuarios status: 403
+Response body: { mensaje: 'No tiene permisos para esta acción' }

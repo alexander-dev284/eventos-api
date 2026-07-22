@@ -320,6 +320,25 @@ main {
   border-radius: 28px;
 }
 
+/* Modal simple: se muestra al agregar clase "active" */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(2,6,23,0.6);
+}
+.modal.active {
+  display: flex;
+}
+.modal .modal-dialog {
+  max-width: 640px;
+  width: 100%;
+}
+
 .modal-header,
 .modal-footer {
   border-color: rgba(255, 255, 255, 0.08) !important;
