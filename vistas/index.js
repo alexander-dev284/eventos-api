@@ -83,7 +83,17 @@ const toggleLoader = show => $('loadingOverlay')?.classList.toggle('hidden', !sh
 // FETCH VIEW TEMPLATE
 async function loadViewTemplate(viewName) {
   try {
-    const response = await fetch(`/${viewName}.html`);
+    const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
+    const response = await fetch(`/${viewName}.html`, { headers });
+    if (response.status === 401) {
+      showToast('Sesión Caducada', 'Inicie sesión de nuevo', 'warning');
+      handleLogout();
+      throw new Error('No autorizado');
+    }
+    if (response.status === 403) {
+      showToast('Acceso Denegado', 'No tiene permisos para ver esta sección', 'warning');
+      throw new Error('Prohibido');
+    }
     if (!response.ok) throw new Error(`Error al cargar la plantilla ${viewName}`);
     return await response.text();
   } catch (error) {

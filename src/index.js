@@ -1,5 +1,6 @@
 // Package
 import express from 'express';
+import protegerPlantillas from './middlewares/staticAuth.middleware.js';
 import authRoutes from './modules/auth/routes.js';
 import usuariosRoutes from './modules/usuarios/routes.js';
 import rolesRoutes from './modules/roles/routes.js';
@@ -19,6 +20,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos estáticos del frontend sin almacenamiento en caché (Cache-Control: no-store)
+// Protect HTML templates before serving static files
+app.use(protegerPlantillas);
 app.use(express.static('vistas', {
     setHeaders: (res, path) => {
         res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
