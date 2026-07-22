@@ -6,8 +6,11 @@
   "scripts": {
     "start": "nodemon ./src/index.js",
     "db:init": "node src/database/init.js",
-    "test": "node scripts/tests/test_backend.js",
-    "test:menu": "node scripts/tests/test_menu_dynamic.js"
+    "db:migrate": "node src/database/migrate.js",
+    "test:backend": "node scripts/tests/test_backend.js",
+    "test:menu": "node scripts/tests/test_menu_dynamic.js",
+    "test:transaccional": "node scripts/tests/test_transaccion_registros.js",
+    "test:api": "node scripts/tests/test-api.js"
   },
   "keywords": [],
   "author": "Victor Imbaquingo, Alex Espinoza, Gabriel Miño, Jorge Miranda, Kevin Villalba",

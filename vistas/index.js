@@ -746,7 +746,9 @@ async function deleteEvento(id) {
   if (!eve) return;
   if (confirm(`¿Está seguro de eliminar el evento "${eve.nombre}"?`)) {
     try {
-      await apiRequest(`/api/eventos/${id}`, { method: 'DELETE' });
+      // If the current user is admin, allow forcing deletion of events with inscripciones
+      const forceParam = (state.usuario && state.usuario.rol && state.usuario.rol.toLowerCase() === 'admin') ? '?force=true' : '';
+      await apiRequest(`/api/eventos/${id}${forceParam}`, { method: 'DELETE' });
       showToast('Evento Eliminado', `Se removió el evento correctamente.`);
       getEventos();
     } catch (error) {

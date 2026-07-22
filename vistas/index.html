@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="index.css?v=1.0.3">
+  <link rel="stylesheet" href="index.css?v=1.0.5">
 </head>
 <body class="bg-dark text-light min-vh-screen">
 
@@ -24,7 +24,7 @@
   <div id="toastContainer" class="toast-container"></div>
 
   <!-- LOGIN SECTION MOUNT POINT -->
-  <div id="loginSection" class="min-vh-screen w-100 d-flex justify-content-center align-items-center p-3">
+  <div id="loginSection" class="min-vh-screen w-100 d-flex justify-content-center align-items-center p-4">
     <!-- Loaded dynamically from login.html -->
   </div>
 
@@ -32,52 +32,55 @@
   <div id="appLayout" class="app-layout hidden d-flex min-vh-screen">
     
     <!-- SIDEBAR -->
-    <aside class="sidebar bg-body-tertiary border-end border-secondary-subtle d-flex flex-column p-4">
+    <aside class="sidebar d-flex flex-column p-4">
       <div class="d-flex align-items-center gap-2 mb-4">
-        <span class="text-primary fs-3 fw-bold">✦</span>
-        <span class="fs-5 fw-bold text-white tracking-tight">Eventify</span>
+        <span class="brand-icon">✦</span>
+        <div>
+          <div class="fs-5 fw-bold text-white">Eventify</div>
+          <div class="text-muted small">Panel de administración</div>
+        </div>
       </div>
       
-      <div class="d-flex align-items-center gap-3 p-3 bg-dark bg-opacity-25 border border-secondary-subtle rounded-3 mb-4">
-        <div class="avatar bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-circle fw-bold d-flex align-items-center justify-content-center" id="userAvatar" style="width: 40px; height: 40px;">U</div>
+      <div class="d-flex align-items-center gap-3 p-3 bg-surface-soft border border-secondary-subtle rounded-3 mb-4">
+        <div class="avatar bg-primary bg-opacity-15 text-primary border border-primary border-opacity-25 rounded-circle fw-bold d-flex align-items-center justify-content-center" id="userAvatar" style="width: 44px; height: 44px;">U</div>
         <div class="d-flex flex-column overflow-hidden">
-          <span class="text-sm fw-semibold text-white truncate" id="profileName">Usuario</span>
-          <span class="text-xs text-secondary" id="profileRole">Rol</span>
+          <span class="fw-semibold text-white text-truncate" id="profileName">Usuario</span>
+          <span class="text-muted small" id="profileRole">Rol</span>
         </div>
       </div>
 
       <nav class="sidebar-nav flex-grow-1">
-        <ul class="nav flex-column gap-1 p-0">
-          <li data-tab="asistentes" id="navAsistentes" class="nav-item d-flex align-items-center gap-3 px-3 py-2.5 rounded-3 text-secondary border border-transparent cursor-pointer">
+        <ul class="nav flex-column gap-2 p-0">
+          <li data-tab="asistentes" id="navAsistentes" class="nav-item d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-secondary">
             <span class="fs-5">👤</span>
             <span>Asistentes</span>
           </li>
-          <li data-tab="eventos" id="navEventos" class="nav-item d-flex align-items-center gap-3 px-3 py-2.5 rounded-3 text-secondary border border-transparent cursor-pointer">
+          <li data-tab="eventos" id="navEventos" class="nav-item d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-secondary">
             <span class="fs-5">📅</span>
             <span>Eventos</span>
           </li>
-          <li data-tab="registros" id="navRegistros" class="nav-item d-flex align-items-center gap-3 px-3 py-2.5 rounded-3 text-secondary border border-transparent cursor-pointer">
+          <li data-tab="registros" id="navRegistros" class="nav-item d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-secondary">
             <span class="fs-5">✍️</span>
             <span>Inscripción</span>
           </li>
-          <li data-tab="reportes" id="navReportes" class="nav-item d-flex align-items-center gap-3 px-3 py-2.5 rounded-3 text-secondary border border-transparent cursor-pointer">
+          <li data-tab="reportes" id="navReportes" class="nav-item d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-secondary">
             <span class="fs-5">📊</span>
             <span>Reportes</span>
           </li>
-          <li data-tab="usuarios" id="navUsuarios" class="nav-item d-flex align-items-center gap-3 px-3 py-2.5 rounded-3 text-secondary border border-transparent cursor-pointer">
+          <li data-tab="usuarios" id="navUsuarios" class="nav-item d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-secondary">
             <span class="fs-5">👥</span>
             <span>Usuarios</span>
           </li>
-          <li data-tab="roles" id="navRoles" class="nav-item d-flex align-items-center gap-3 px-3 py-2.5 rounded-3 text-secondary border border-transparent cursor-pointer">
+          <li data-tab="roles" id="navRoles" class="nav-item d-flex align-items-center gap-3 px-3 py-2 rounded-3 text-secondary">
             <span class="fs-5">🛡️</span>
             <span>Roles</span>
           </li>
         </ul>
       </nav>
 
-      <div class="mt-auto pt-4 border-t border-secondary-subtle">
+      <div class="mt-auto pt-4">
         <button id="logoutBtn" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2">
-          <span></span> Cerrar Sesión
+          Cerrar Sesión
         </button>
       </div>
     </aside>
@@ -86,15 +89,16 @@
     <main class="flex-grow-1 p-5 overflow-y-auto" style="height: 100vh;">
       
       <!-- HEADER -->
-      <header class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary-subtle">
-        <h1 class="h3 fw-bold text-white tracking-tight m-0" id="viewTitle">Cargando...</h1>
-        <span class="text-sm text-secondary" id="currentDateStr">Cargando fecha...</span>
+      <header class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary-subtle">
+        <div>
+          <h1 class="h3 fw-bold text-white tracking-tight m-0" id="viewTitle">Cargando...</h1>
+          <p class="text-muted small mb-0">Administra asistentes, eventos, registros y reportes desde un solo lugar.</p>
+        </div>
+        <span class="text-muted small" id="currentDateStr">Cargando fecha...</span>
       </header>
 
       <!-- DYNAMIC TAB CONTENT MOUNT POINT -->
-      <div id="tabContent">
-        <!-- Loaded dynamically from <tab>.html -->
-      </div>
+      <div id="tabContent"></div>
 
     </main>
   </div>
@@ -110,17 +114,17 @@
         <form id="asistenteForm">
           <div class="modal-body d-flex flex-column gap-3 p-4">
             <input type="hidden" id="asistenteId">
-            <div class="d-flex flex-column gap-1">
-              <label class="form-label text-secondary fw-semibold text-sm m-0" for="asiIdentificacion">Cédula / Identificación</label>
-              <input class="form-control" type="text" id="asiIdentificacion" required placeholder="ej. 1726354859">
+            <div class="form-floating">
+              <input class="form-control bg-dark text-white border-secondary" type="text" id="asiIdentificacion" required placeholder="Cédula / Identificación">
+              <label for="asiIdentificacion">Cédula / Identificación</label>
             </div>
-            <div class="d-flex flex-column gap-1">
-              <label class="form-label text-secondary fw-semibold text-sm m-0" for="asiNombre">Nombre Completo</label>
-              <input class="form-control" type="text" id="asiNombre" required placeholder="ej. Juan Pérez">
+            <div class="form-floating">
+              <input class="form-control bg-dark text-white border-secondary" type="text" id="asiNombre" required placeholder="Nombre Completo">
+              <label for="asiNombre">Nombre Completo</label>
             </div>
-            <div class="d-flex flex-column gap-1">
-              <label class="form-label text-secondary fw-semibold text-sm m-0" for="asiEmail">Correo Electrónico</label>
-              <input class="form-control" type="email" id="asiEmail" required placeholder="ej. juan.perez@example.com">
+            <div class="form-floating">
+              <input class="form-control bg-dark text-white border-secondary" type="email" id="asiEmail" required placeholder="Correo Electrónico">
+              <label for="asiEmail">Correo Electrónico</label>
             </div>
           </div>
           <div class="modal-footer border-top border-secondary-subtle p-3">
@@ -143,21 +147,21 @@
         <form id="eventoForm">
           <div class="modal-body d-flex flex-column gap-3 p-4">
             <input type="hidden" id="eventoId">
-            <div class="d-flex flex-column gap-1">
-              <label class="form-label text-secondary fw-semibold text-sm m-0" for="eveNombre">Nombre del Evento</label>
-              <input class="form-control" type="text" id="eveNombre" required placeholder="ej. Seminario de Ciberseguridad">
+            <div class="form-floating">
+              <input class="form-control bg-dark text-white border-secondary" type="text" id="eveNombre" required placeholder="Nombre del Evento">
+              <label for="eveNombre">Nombre del Evento</label>
             </div>
-            <div class="d-flex flex-column gap-1">
-              <label class="form-label text-secondary fw-semibold text-sm m-0" for="eveFechaInicio">Fecha de Inicio</label>
-              <input class="form-control" type="datetime-local" id="eveFechaInicio" required>
+            <div class="form-floating">
+              <input class="form-control bg-dark text-white border-secondary" type="datetime-local" id="eveFechaInicio" required placeholder="Fecha de Inicio">
+              <label for="eveFechaInicio">Fecha de Inicio</label>
             </div>
-            <div class="d-flex flex-column gap-1">
-              <label class="form-label text-secondary fw-semibold text-sm m-0" for="eveCapacidad">Capacidad / Cupo Máximo</label>
-              <input class="form-control" type="number" id="eveCapacidad" required min="1" placeholder="ej. 50">
+            <div class="form-floating">
+              <input class="form-control bg-dark text-white border-secondary" type="number" id="eveCapacidad" required min="1" placeholder="Capacidad">
+              <label for="eveCapacidad">Capacidad / Cupo Máximo</label>
             </div>
-            <div class="d-flex flex-column gap-1">
-              <label class="form-label text-secondary fw-semibold text-sm m-0" for="eveUbicacion">Ubicación / Aula</label>
-              <input class="form-control" type="text" id="eveUbicacion" required placeholder="ej. Auditorio Principal o Aula Virtual">
+            <div class="form-floating">
+              <input class="form-control bg-dark text-white border-secondary" type="text" id="eveUbicacion" required placeholder="Ubicación / Aula">
+              <label for="eveUbicacion">Ubicación / Aula</label>
             </div>
           </div>
           <div class="modal-footer border-top border-secondary-subtle p-3">

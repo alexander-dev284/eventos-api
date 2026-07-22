@@ -26,7 +26,9 @@ export function autorizarRoles(...rolesPermitidos) {
       return res.status(401).json({ mensaje: 'No autenticado' });
     }
 
-    if (!rolesNormalizados.includes(req.usuario.rolNombre?.toLowerCase())) {
+    // Support multiple token payload shapes: `rolNombre`, `rol`, or `role`
+    const roleFromToken = (req.usuario.rolNombre || req.usuario.rol || req.usuario.role || '').toString().toLowerCase();
+    if (!rolesNormalizados.includes(roleFromToken)) {
       return res.status(403).json({ mensaje: 'No tiene permisos para esta acción' });
     }
 
