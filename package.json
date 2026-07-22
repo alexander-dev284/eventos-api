@@ -5,7 +5,14 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "db:init": "node src/database/init.js",
+    "db:migrate": "node src/database/migrate.js",
+    "test:backend": "node scripts/tests/test_backend.js",
+    "test:menu": "node scripts/tests/test_menu_dynamic.js",
+    "test:transaccional": "node scripts/tests/test_transaccion_registros.js",
+    "test:api": "node scripts/tests/test-api.js",
+    "test:operativo-forbidden": "node scripts/tests/test-operativo-forbidden.js"
+    
   },
   "keywords": [],
   "author": "Victor Imbaquingo, Alex Espinoza, Gabriel Miño, Jorge Miranda, Kevin Villalba",
@@ -17,6 +24,7 @@
     "jsonwebtoken": "^9.0.2",
     "node": "^26.5.0",
     "nodemon": "^3.1.14",
-    "pg-promise": "^12.7.0"
+    "pg-promise": "^12.7.0",
+    "xlsx": "^0.18.5"
   }
 }

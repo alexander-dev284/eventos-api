@@ -11,7 +11,7 @@ import registrosRoutes from './modules/registros/routes.js';
 import reportesRoutes from './modules/reportes/routes.js';
 
 const app = express();
-const PORT = 6767;
+const PORT = 4004;
 
 // Middleware
 // Permite recibir datos en formato JSON
@@ -40,7 +40,7 @@ app.use('/api/reportes', reportesRoutes);
 
 // Esto nos dice que cuando se haga una solicitud GET a la raíz ('/'), se ejecutará esta función que envía un mensaje de bienvenida como respuesta.
 app.get('/', (req, res) => {
-    res.send('😺🐴🐒🐖🦣🐝👀👀🦴');
+    res.send('Bienvenido a la API de Eventos. Por favor, use las rutas de la API para interactuar con el sistema.');
 });
 
 

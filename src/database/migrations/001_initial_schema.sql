@@ -1,3 +1,5 @@
+-- Esquema inicial y datos semilla (migrado desde schema.sql)
+
 -- =========================================================
 -- MÓDULO DE SEGURIDAD (Autenticación y Autorización)
 -- =========================================================
@@ -27,7 +29,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_roles_funciones_rol_fun ON roles_funciones
 CREATE TABLE IF NOT EXISTS usuarios (
     usu_id SERIAL PRIMARY KEY,
     usu_username VARCHAR(100) NOT NULL UNIQUE,
-    usu_password VARCHAR(255) NOT NULL, -- Contraseña sin hash según solicitud
+    usu_password VARCHAR(255) NOT NULL,
     usu_rol_id INT NOT NULL,
     FOREIGN KEY (usu_rol_id) REFERENCES roles(rol_id) ON DELETE RESTRICT
 );
@@ -36,7 +38,6 @@ CREATE TABLE IF NOT EXISTS usuarios (
 -- MÓDULO DE NEGOCIO (Gestión de Eventos)
 -- =========================================================
 
--- Catálogo 1: Asistentes
 CREATE TABLE IF NOT EXISTS asistentes (
     asi_id SERIAL PRIMARY KEY,
     asi_identificacion VARCHAR(50) NOT NULL UNIQUE,
@@ -44,17 +45,15 @@ CREATE TABLE IF NOT EXISTS asistentes (
     asi_email VARCHAR(150) NOT NULL UNIQUE
 );
 
--- Catálogo 2: Eventos
 CREATE TABLE IF NOT EXISTS eventos (
     eve_id SERIAL PRIMARY KEY,
     eve_nombre VARCHAR(200) NOT NULL,
     eve_fecha_inicio TIMESTAMP NOT NULL,
     eve_capacidad INT NOT NULL,
     eve_ubicacion VARCHAR(255),
-    eve_estado VARCHAR(50) DEFAULT 'Activo' -- Para validación de evento activo (PBI-23)
+    eve_estado VARCHAR(50) DEFAULT 'Activo'
 );
 
--- Transaccional Cabecera: Registro Evento
 CREATE TABLE IF NOT EXISTS registro_evento (
     reg_id SERIAL PRIMARY KEY,
     reg_fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -62,7 +61,6 @@ CREATE TABLE IF NOT EXISTS registro_evento (
     FOREIGN KEY (reg_asi_id) REFERENCES asistentes(asi_id) ON DELETE RESTRICT
 );
 
--- Transaccional Detalle: Asistencias
 CREATE TABLE IF NOT EXISTS asistencias (
     ase_id SERIAL PRIMARY KEY,
     ase_reg_id INT NOT NULL,

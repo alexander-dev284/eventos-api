@@ -1,5 +1,3 @@
-// Script de prueba para validar rollback transaccional en /api/registros
-// Ejecutar: node scripts/test_transaccion_registros.js
 
 const fetch = globalThis.fetch || require('node-fetch');
 const API = 'http://localhost:6767';

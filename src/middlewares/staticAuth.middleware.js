@@ -35,7 +35,9 @@ export function protegerPlantillas(req, res, next) {
       'asistentes.html': ['ADMIN', 'OPERATIVO'],
       'eventos.html': ['ADMIN'],
       'registros.html': ['ADMIN', 'OPERATIVO'],
-      'reportes.html': ['ADMIN']
+      'reportes.html': ['ADMIN'],
+      'usuarios.html': ['ADMIN'],
+      'roles.html': ['ADMIN']
     };
 
     const allowed = accessMap[file] || ['ADMIN'];
