@@ -1,4 +1,4 @@
--- Initial schema + seeds (migrated from schema.sql)
+-- Esquema inicial y datos semilla (migrado desde schema.sql)
 
 -- =========================================================
 -- MÓDULO DE SEGURIDAD (Autenticación y Autorización)

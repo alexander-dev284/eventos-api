@@ -1,7 +1,7 @@
-// HELPER SHORTHAND FOR DOM SELECTORS
+// ATAJO: SELECTORES DOM (ayuda rápida)
 const $ = id => document.getElementById(id);
 
-// APP STATE
+// ESTADO DE LA APLICACIÓN
 const state = {
   token: localStorage.getItem('token') || null,
   usuario: JSON.parse(localStorage.getItem('usuario')) || null,
@@ -13,17 +13,17 @@ const state = {
   roles: []
 };
 
-// Preserve original sidebar HTML to allow dynamic rebuilds
+// Conservar HTML original de la barra lateral para reconstrucciones dinámicas
 let ORIGINAL_SIDEBAR_HTML = null;
 
-// CONSTANTS
+// CONSTANTES
 const API_URL = ''; 
 
-// INITIALIZATION
+// INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', () => {
   setupGlobalEventListeners();
   updateCurrentDate();
-  // capture original sidebar template for later restoration
+  // capturar plantilla original de la barra lateral para restauraciones
   const sidebar = document.querySelector('.sidebar-nav');
   if (sidebar) ORIGINAL_SIDEBAR_HTML = sidebar.innerHTML;
   if (state.token && state.usuario) {
@@ -78,7 +78,7 @@ function updateCurrentDate() {
   if (dateStr) dateStr.textContent = new Date().toLocaleDateString('es-ES', options);
 }
 
-// TOAST NOTIFICATIONS
+// NOTIFICACIONES (toasts)
 function showToast(title, message, type = 'success') {
   const toast = document.createElement('div');
   const alertType = type === 'error' ? 'danger' : type;
@@ -93,10 +93,10 @@ function showToast(title, message, type = 'success') {
   }, 4000);
 }
 
-// LOADER UTILITIES
+// UTILIDADES DE CARGA (loader)
 const toggleLoader = show => $('loadingOverlay')?.classList.toggle('hidden', !show);
 
-// FETCH VIEW TEMPLATE
+// CARGA DE PLANTILLAS (fetch de vistas)
 async function loadViewTemplate(viewName) {
   try {
     const headers = state.token ? { 'Authorization': `Bearer ${state.token}` } : {};
@@ -118,7 +118,7 @@ async function loadViewTemplate(viewName) {
   }
 }
 
-// API FETCH WRAPPER
+// WRAPPER PARA PETICIONES A LA API
 async function apiRequest(endpoint, options = {}) {
   toggleLoader(true);
   const headers = {
@@ -165,7 +165,7 @@ async function apiRequest(endpoint, options = {}) {
   }
 }
 
-// LOGIN / LOGOUT
+// INICIO DE SESIÓN / CIERRE DE SESIÓN
 async function showLogin() {
   $('loginSection')?.classList.remove('hidden');
   $('appLayout')?.classList.add('hidden');
@@ -247,19 +247,19 @@ function configureMenuByRoles() {
   const tabs = getAuthorizedTabs();
   const sidebar = document.querySelector('.sidebar-nav');
   if (!sidebar) return;
-  // restore original menu structure so changes are idempotent
+  // restaurar la estructura original del menú para que los cambios sean idempotentes
   if (ORIGINAL_SIDEBAR_HTML) sidebar.innerHTML = ORIGINAL_SIDEBAR_HTML;
 
-  // remove items that the user is not authorized to see
+  // eliminar elementos que el usuario no está autorizado a ver
   sidebar.querySelectorAll('li').forEach(li => {
     const tab = li.getAttribute('data-tab');
     if (!tabs.includes(tab)) {
       li.remove();
     }
   });
-  // reattach click listeners to remaining items (we may have replaced the DOM)
+  // volver a adjuntar escuchas de clic a los elementos restantes (el DOM pudo haber cambiado)
   sidebar.querySelectorAll('li').forEach(item => {
-    // remove existing listener by cloning node to avoid duplicate handlers
+    // eliminar escuchas existentes clonando el nodo para evitar duplicados
     const newItem = item.cloneNode(true);
     item.replaceWith(newItem);
     newItem.addEventListener('click', (e) => {
@@ -269,7 +269,7 @@ function configureMenuByRoles() {
   });
 }
 
-// TAB SWITCHING
+// CAMBIO DE PESTAÑAS
 async function switchTab(tabId) {
   state.activeTab = tabId;
   const authorizedTabs = getAuthorizedTabs();
@@ -541,7 +541,7 @@ async function deleteRol(id) {
   }
 }
 
-// --- CRUD ASISTENTES ---
+// --- CRUD DE ASISTENTES ---
 async function getAsistentes() {
   try {
     state.asistentes = await apiRequest('/api/asistentes');
@@ -643,7 +643,7 @@ async function deleteAsistente(id) {
   }
 }
 
-// --- CRUD EVENTOS ---
+// --- CRUD DE EVENTOS ---
 async function getEventos() {
   try {
     const res = await apiRequest('/api/eventos?limit=100');
@@ -746,7 +746,7 @@ async function deleteEvento(id) {
   if (!eve) return;
   if (confirm(`¿Está seguro de eliminar el evento "${eve.nombre}"?`)) {
     try {
-      // If the current user is admin, allow forcing deletion of events with inscripciones
+      // Si el usuario actual es admin, permitir forzar eliminación de eventos con inscripciones
       const forceParam = (state.usuario && state.usuario.rol && state.usuario.rol.toLowerCase() === 'admin') ? '?force=true' : '';
       await apiRequest(`/api/eventos/${id}${forceParam}`, { method: 'DELETE' });
       showToast('Evento Eliminado', `Se removió el evento correctamente.`);
@@ -1007,7 +1007,7 @@ function renderReportes(reportes) {
   });
 }
 
-// HELPERS
+// FUNCIONES AUXILIARES
 function formatDateTime(dateStr) {
   if (!dateStr) return 'N/A';
   const date = new Date(dateStr);

@@ -23,19 +23,19 @@ async function getAppliedMigrations() {
 
 async function applyMigration(file) {
   const sql = await fs.readFile(path.join(migrationsDir, file), 'utf8');
-  console.log('Applying', file);
+  console.log('Aplicando', file);
   await db.tx(async t => {
     await t.none(sql);
     await t.none('INSERT INTO migrations (filename) VALUES ($1)', [file]);
   });
-  console.log('Applied', file);
+  console.log('Aplicado', file);
 }
 
 async function run() {
   try {
     const files = (await fs.readdir(migrationsDir)).filter(f => f.endsWith('.sql')).sort();
     if (files.length === 0) {
-      console.log('No migration files found');
+      console.log('No se encontraron archivos de migración');
       return;
     }
     await ensureMigrationsTable();
@@ -44,12 +44,12 @@ async function run() {
       if (!applied.has(file)) {
         await applyMigration(file);
       } else {
-        console.log('Skipping', file, '(already applied)');
+        console.log('Omitiendo', file, '(ya aplicado)');
       }
     }
-    console.log('Migrations complete.');
+    console.log('Migraciones completadas.');
   } catch (err) {
-    console.error('Migration failed:', err.message || err);
+    console.error('Error en migración:', err.message || err);
     process.exit(1);
   }
 }
