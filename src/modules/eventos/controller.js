@@ -119,17 +119,44 @@ export async function editarEvento(req, res) {
 
 export async function eliminarEvento(req, res) {
   try {
-    const resultado = await db.result('DELETE FROM eventos WHERE eve_id = $1', [req.params.id]);
+    const eventId = parseInt(req.params.id, 10);
+    const force = req.query.force === 'true' || req.query.force === '1';
 
+    // Check if there are asistencias for this event
+    const { count: asistCount } = await db.one(
+      'SELECT COUNT(*)::int AS count FROM asistencias WHERE ase_eve_id = $1 AND ase_estado != $2',
+      [eventId, 'Cancelado']
+    );
+
+    if (asistCount > 0 && !force) {
+      return res.status(409).json({ mensaje: 'No se puede eliminar: el evento tiene inscripciones registradas. Use ?force=true para forzar la eliminación (eliminará las inscripciones relacionadas).' });
+    }
+
+    // If force, perform cleanup in a transaction: delete asistencias for the event, remove orphan registros, then delete event
+    if (force) {
+      await db.tx(async (t) => {
+        await t.none('DELETE FROM asistencias WHERE ase_eve_id = $1', [eventId]);
+        await t.none(`DELETE FROM registro_evento r WHERE NOT EXISTS (SELECT 1 FROM asistencias a WHERE a.ase_reg_id = r.reg_id)`);
+        const result = await t.result('DELETE FROM eventos WHERE eve_id = $1', [eventId]);
+        if (result.rowCount === 0) {
+          const err = new Error('Evento no encontrado');
+          err.status = 404;
+          throw err;
+        }
+      });
+      return res.status(204).send();
+    }
+
+    // Non-force delete (no asistencias) — normal delete
+    const resultado = await db.result('DELETE FROM eventos WHERE eve_id = $1', [eventId]);
     if (resultado.rowCount === 0) {
       return res.status(404).json({ mensaje: 'Evento no encontrado' });
     }
-
     return res.status(204).send();
   } catch (error) {
-    if (error.code === '23503') {
-      return res.status(409).json({ mensaje: 'No se puede eliminar: el evento tiene inscripciones registradas' });
+    if (error.status === 404) {
+      return res.status(404).json({ mensaje: 'Evento no encontrado' });
     }
-    return res.status(500).json({ mensaje: 'Error al eliminar evento', error: error.message });
+    return res.status(error.status || 500).json({ mensaje: error.message || 'Error al eliminar evento', error: error.message });
   }
 }
