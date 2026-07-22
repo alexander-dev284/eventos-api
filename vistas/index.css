@@ -99,3 +99,126 @@ body {
   right: 24px;
   z-index: 99999;
 }
+
+/* Minimal event table and dark layout refinement */
+body {
+  background-color: #07080d;
+  color: #e5e7eb;
+}
+
+.app-layout {
+  background: #07080d;
+}
+
+.card {
+  border: none !important;
+  background: rgba(15, 18, 28, 0.92) !important;
+  box-shadow: 0 20px 70px rgba(3, 8, 20, 0.35);
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+.table-responsive {
+  border-radius: 24px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.table.table-dark {
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+  background: transparent;
+}
+
+.table.table-dark thead {
+  background: transparent;
+}
+
+.table.table-dark thead th {
+  border: none;
+  color: rgba(229, 231, 235, 0.65);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  text-transform: uppercase;
+  padding: 18px 16px;
+}
+
+.table.table-dark tbody tr {
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.25s ease, transform 0.25s ease;
+  border-radius: 20px;
+}
+
+.table.table-dark tbody tr:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.table.table-dark tbody td {
+  border: none;
+  padding: 20px 16px;
+  vertical-align: middle;
+  color: rgba(229, 231, 235, 0.72);
+  font-weight: 400;
+}
+
+.table.table-dark tbody td strong,
+.table.table-dark tbody td b {
+  color: #ffffff;
+}
+
+.table.table-dark tbody td .badge,
+.table.table-dark tbody td .btn {
+  opacity: 0.95;
+}
+
+.table.table-dark tbody tr td:last-child {
+  text-align: right;
+}
+
+.table.table-dark tbody tr .edit-btn,
+.table.table-dark tbody tr .delete-btn {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(1px);
+  transition: opacity 0.22s ease, visibility 0.22s ease, transform 0.22s ease;
+}
+
+.table.table-dark tbody tr:hover .edit-btn,
+.table.table-dark tbody tr:hover .delete-btn {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.table.table-dark tbody tr td .btn {
+  border-radius: 999px;
+  min-width: 2.7rem;
+  height: 2.7rem;
+  padding: 0;
+}
+
+.table.table-dark tbody tr td .edit-btn {
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.table.table-dark tbody tr td .delete-btn {
+  border-color: rgba(248, 113, 113, 0.18);
+}
+
+.table.table-dark tbody tr td .btn:hover {
+  transform: translateY(-1px);
+}
+
+.table.table-dark tbody tr td span {
+  color: rgba(229, 231, 235, 0.8);
+}
+
+.table.table-dark tbody tr td:first-child {
+  padding-left: 24px;
+}
+
+.table.table-dark tbody tr td:last-child {
+  padding-right: 24px;
+}
