@@ -1,0 +1,59 @@
+<div class="d-flex justify-content-between align-items-center mb-4 gap-3">
+  <div class="flex-grow-1" style="max-width: 320px;">
+    <input type="text" id="searchUsuario" class="form-control" placeholder="Buscar usuario...">
+  </div>
+  <button class="btn btn-primary d-flex align-items-center gap-2 fw-semibold" id="btnNuevoUsuario">
+    <span>➕</span> Nuevo Usuario
+  </button>
+</div>
+<div class="card border border-secondary-subtle bg-body-tertiary shadow p-0 overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle m-0">
+      <thead>
+        <tr class="table-active small text-uppercase text-secondary">
+          <th class="ps-4">ID</th>
+          <th>Username</th>
+          <th>Rol</th>
+          <th class="text-end pe-4">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="usuariosTableBody">
+        <!-- Carga dinámica -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="usuarioModal" class="modal">
+  <div class="modal-dialog w-100" style="max-width: 500px;">
+    <div class="modal-content border border-secondary-subtle bg-dark">
+      <div class="modal-header border-bottom border-secondary-subtle">
+        <h5 class="modal-title fw-bold text-white" id="usuarioModalTitle">Crear Usuario</h5>
+        <button type="button" class="btn-close close-btn" aria-label="Close"></button>
+      </div>
+      <form id="usuarioForm">
+        <div class="modal-body d-flex flex-column gap-3 p-4">
+          <input type="hidden" id="usuarioId">
+          <div class="d-flex flex-column gap-1">
+            <label class="form-label text-secondary fw-semibold text-sm m-0" for="usuarioUsername">Username</label>
+            <input class="form-control" type="text" id="usuarioUsername" required placeholder="ej. jdoe">
+          </div>
+          <div class="d-flex flex-column gap-1">
+            <label class="form-label text-secondary fw-semibold text-sm m-0" for="usuarioPassword">Contraseña</label>
+            <input class="form-control" type="password" id="usuarioPassword" placeholder="Deje vacío para mantenerla" autocomplete="new-password">
+          </div>
+          <div class="d-flex flex-column gap-1">
+            <label class="form-label text-secondary fw-semibold text-sm m-0" for="usuarioRolSelect">Rol</label>
+            <select class="form-select" id="usuarioRolSelect" required>
+              <option value="">-- Seleccione un rol --</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer border-top border-secondary-subtle p-3">
+          <button type="button" class="btn btn-outline-secondary btn-secondary close-btn">Cancelar</button>
+          <button type="submit" class="btn btn-primary px-4">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

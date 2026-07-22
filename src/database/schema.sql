@@ -80,12 +80,13 @@ INSERT INTO funciones (fun_nombre) VALUES
 ('CRUD Asistentes'),
 ('CRUD Eventos'),
 ('Registro Transaccional'),
-('Reportes')
+('Reportes'),
+('CRUD Usuarios'),
+('CRUD Roles')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO roles_funciones (rof_rol_id, rof_fun_id) VALUES 
-(1, 1), (1, 2), (1, 3), (1, 4),
-(2, 1), (2, 3)
+INSERT INTO roles_funciones (rof_rol_id, rof_fun_id) 
+SELECT 1, fun_id FROM funciones WHERE fun_nombre IN ('CRUD Asistentes', 'CRUD Eventos', 'Registro Transaccional', 'Reportes', 'CRUD Usuarios', 'CRUD Roles')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO usuarios (usu_username, usu_password, usu_rol_id) VALUES

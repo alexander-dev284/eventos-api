@@ -66,6 +66,7 @@ export async function crearUsuario(req, res) {
 export async function actualizarUsuario(req, res) {
   try {
     const { username, password, rolId } = req.body;
+    const passwordValue = password === '' ? null : password;
 
     const usuario = await db.oneOrNone(
       `UPDATE usuarios
@@ -74,7 +75,7 @@ export async function actualizarUsuario(req, res) {
            usu_rol_id = COALESCE($3, usu_rol_id)
        WHERE usu_id = $4
        RETURNING usu_id AS id, usu_username AS username, usu_rol_id AS "rolId"`,
-      [username ?? null, password ?? null, rolId ?? null, req.params.id]
+      [username ?? null, passwordValue, rolId ?? null, req.params.id]
     );
 
     if (!usuario) {

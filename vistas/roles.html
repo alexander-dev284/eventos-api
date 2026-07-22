@@ -1,0 +1,48 @@
+<div class="d-flex justify-content-between align-items-center mb-4 gap-3">
+  <div class="flex-grow-1" style="max-width: 320px;">
+    <input type="text" id="searchRol" class="form-control" placeholder="Buscar rol...">
+  </div>
+  <button class="btn btn-primary d-flex align-items-center gap-2 fw-semibold" id="btnNuevoRol">
+    <span>➕</span> Nuevo Rol
+  </button>
+</div>
+<div class="card border border-secondary-subtle bg-body-tertiary shadow p-0 overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle m-0">
+      <thead>
+        <tr class="table-active small text-uppercase text-secondary">
+          <th class="ps-4">ID</th>
+          <th>Nombre del Rol</th>
+          <th class="text-end pe-4">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="rolesTableBody">
+        <!-- Carga dinámica -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="rolModal" class="modal">
+  <div class="modal-dialog w-100" style="max-width: 500px;">
+    <div class="modal-content border border-secondary-subtle bg-dark">
+      <div class="modal-header border-bottom border-secondary-subtle">
+        <h5 class="modal-title fw-bold text-white" id="rolModalTitle">Crear Rol</h5>
+        <button type="button" class="btn-close close-btn" aria-label="Close"></button>
+      </div>
+      <form id="rolForm">
+        <div class="modal-body d-flex flex-column gap-3 p-4">
+          <input type="hidden" id="rolId">
+          <div class="d-flex flex-column gap-1">
+            <label class="form-label text-secondary fw-semibold text-sm m-0" for="rolNombre">Nombre del Rol</label>
+            <input class="form-control" type="text" id="rolNombre" required placeholder="ej. Operativo">
+          </div>
+        </div>
+        <div class="modal-footer border-top border-secondary-subtle p-3">
+          <button type="button" class="btn btn-outline-secondary btn-secondary close-btn">Cancelar</button>
+          <button type="submit" class="btn btn-primary px-4">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -8,7 +8,9 @@ const state = {
   activeTab: 'asistentes',
   asistentes: [],
   eventos: [],
-  registros: []
+  registros: [],
+  usuarios: [],
+  roles: []
 };
 
 // Preserve original sidebar HTML to allow dynamic rebuilds
@@ -47,12 +49,26 @@ function setupGlobalEventListeners() {
   const eveForm = $('eventoForm');
   if (eveForm) eveForm.addEventListener('submit', handleEventoSubmit);
 
+  const usuarioForm = $('usuarioForm');
+  if (usuarioForm) usuarioForm.addEventListener('submit', handleUsuarioSubmit);
+
+  const rolForm = $('rolForm');
+  if (rolForm) rolForm.addEventListener('submit', handleRolSubmit);
+
   document.querySelectorAll('#asistenteModal .close-btn, #asistenteModal .btn-secondary').forEach(btn => {
     btn.addEventListener('click', closeAsistenteModal);
   });
   
   document.querySelectorAll('#eventoModal .close-btn, #eventoModal .btn-secondary').forEach(btn => {
     btn.addEventListener('click', closeEventoModal);
+  });
+
+  document.querySelectorAll('#usuarioModal .close-btn, #usuarioModal .btn-secondary').forEach(btn => {
+    btn.addEventListener('click', closeUsuarioModal);
+  });
+
+  document.querySelectorAll('#rolModal .close-btn, #rolModal .btn-secondary').forEach(btn => {
+    btn.addEventListener('click', closeRolModal);
   });
 }
 
@@ -211,13 +227,19 @@ function getAuthorizedTabs() {
     'CRUD Asistentes': 'asistentes',
     'CRUD Eventos': 'eventos',
     'Registro Transaccional': 'registros',
-    'Reportes': 'reportes'
+    'Reportes': 'reportes',
+    'CRUD Usuarios': 'usuarios',
+    'CRUD Roles': 'roles'
   };
   const set = new Set();
   funciones.forEach(f => {
     const tab = mapping[f];
     if (tab) set.add(tab);
   });
+  if (state.usuario?.rol?.toLowerCase() === 'admin') {
+    set.add('usuarios');
+    set.add('roles');
+  }
   return Array.from(set);
 }
 
@@ -286,6 +308,236 @@ function setupViewDataAndListeners(tabId) {
     $('registroForm')?.addEventListener('submit', handleRegistroSubmit);
   } else if (tabId === 'reportes') {
     getReportes();
+    $('btnExportReportes')?.addEventListener('click', exportReportes);
+  } else if (tabId === 'usuarios') {
+    getUsuarios();
+    $('searchUsuario')?.addEventListener('input', filterUsuarios);
+    $('btnNuevoUsuario')?.addEventListener('click', () => openUsuarioModal());
+    $('usuarioForm')?.addEventListener('submit', handleUsuarioSubmit);
+    document.querySelectorAll('#usuarioModal .close-btn, #usuarioModal .btn-secondary').forEach(btn => {
+      btn.addEventListener('click', closeUsuarioModal);
+    });
+  } else if (tabId === 'roles') {
+    getRoles();
+    $('searchRol')?.addEventListener('input', filterRoles);
+    $('btnNuevoRol')?.addEventListener('click', () => openRolModal());
+    $('rolForm')?.addEventListener('submit', handleRolSubmit);
+    document.querySelectorAll('#rolModal .close-btn, #rolModal .btn-secondary').forEach(btn => {
+      btn.addEventListener('click', closeRolModal);
+    });
+  }
+}
+
+// --- CRUD DE USUARIOS ---
+
+async function getUsuarios() {
+  try {
+    state.usuarios = await apiRequest('/api/usuarios');
+    renderUsuarios(state.usuarios);
+  } catch (error) {
+    showToast('Error al cargar usuarios', error.message, 'error');
+  }
+}
+
+function renderUsuarios(list) {
+  const tableBody = $('usuariosTableBody');
+  if (!tableBody) return;
+  tableBody.innerHTML = '';
+  if (list.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-secondary py-4">No se encontraron usuarios.</td></tr>`;
+    return;
+  }
+  list.forEach(user => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="ps-4">${user.id}</td>
+      <td><strong>${user.username}</strong></td>
+      <td>${user.rolNombre}</td>
+      <td class="text-end pe-4">
+        <button class="btn btn-outline-secondary btn-sm me-1 edit-btn">✏️</button>
+        <button class="btn btn-outline-danger btn-sm delete-btn">🗑️</button>
+      </td>
+    `;
+    tr.querySelector('.edit-btn').addEventListener('click', () => openUsuarioModal(user.id));
+    tr.querySelector('.delete-btn').addEventListener('click', () => deleteUsuario(user.id));
+    tableBody.appendChild(tr);
+  });
+}
+
+function filterUsuarios() {
+  const query = $('searchUsuario').value.toLowerCase().trim();
+  const filtered = state.usuarios.filter(user => 
+    user.username.toLowerCase().includes(query) ||
+    user.rolNombre.toLowerCase().includes(query)
+  );
+  renderUsuarios(filtered);
+}
+
+async function loadRolesForUsuarioSelect() {
+  if (!state.roles || state.roles.length === 0) {
+    state.roles = await apiRequest('/api/roles');
+  }
+  const select = $('usuarioRolSelect');
+  if (!select) return;
+  select.innerHTML = '<option value="">-- Seleccione un rol --</option>';
+  state.roles.forEach(role => {
+    const option = document.createElement('option');
+    option.value = role.id;
+    option.textContent = role.nombre;
+    select.appendChild(option);
+  });
+}
+
+async function openUsuarioModal(id = null) {
+  const form = $('usuarioForm');
+  if (form) form.reset();
+  $('usuarioId').value = '';
+  await loadRolesForUsuarioSelect();
+  const validId = (id && typeof id !== 'object') ? id : null;
+  $('usuarioModalTitle').textContent = validId ? 'Editar Usuario' : 'Crear Usuario';
+  if (validId) {
+    const user = state.usuarios.find(u => u.id === validId);
+    if (user) {
+      $('usuarioId').value = user.id;
+      $('usuarioUsername').value = user.username;
+      $('usuarioPassword').value = '';
+      $('usuarioRolSelect').value = user.rolId;
+    }
+  }
+  $('usuarioModal')?.classList.add('active');
+}
+
+const closeUsuarioModal = () => $('usuarioModal')?.classList.remove('active');
+
+async function handleUsuarioSubmit(e) {
+  e.preventDefault();
+  const id = $('usuarioId').value;
+  const payload = {
+    username: $('usuarioUsername').value.trim(),
+    password: $('usuarioPassword').value,
+    rolId: parseInt($('usuarioRolSelect').value)
+  };
+  if (!payload.username || (!id && !payload.password) || !payload.rolId) {
+    return showToast('Formulario incompleto', 'Complete usuario, contraseña y rol.', 'warning');
+  }
+  const isEdit = !!id;
+  const endpoint = isEdit ? `/api/usuarios/${id}` : '/api/usuarios';
+  const method = isEdit ? 'PUT' : 'POST';
+  try {
+    await apiRequest(endpoint, { method, body: JSON.stringify(payload) });
+    showToast(isEdit ? 'Usuario actualizado' : 'Usuario creado', `El usuario ${payload.username} se guardó correctamente.`);
+    closeUsuarioModal();
+    getUsuarios();
+  } catch (error) {
+    showToast('Error al guardar usuario', error.message, 'error');
+  }
+}
+
+async function deleteUsuario(id) {
+  const user = state.usuarios.find(u => u.id === id);
+  if (!user) return;
+  if (confirm(`¿Confirma eliminación del usuario "${user.username}"?`)) {
+    try {
+      await apiRequest(`/api/usuarios/${id}`, { method: 'DELETE' });
+      showToast('Usuario eliminado', `Se eliminó el usuario ${user.username}.`);
+      getUsuarios();
+    } catch (error) {
+      showToast('Error al eliminar usuario', error.message, 'error');
+    }
+  }
+}
+
+// --- CRUD DE ROLES ---
+
+async function getRoles() {
+  try {
+    state.roles = await apiRequest('/api/roles');
+    renderRoles(state.roles);
+  } catch (error) {
+    showToast('Error al cargar roles', error.message, 'error');
+  }
+}
+
+function renderRoles(list) {
+  const tableBody = $('rolesTableBody');
+  if (!tableBody) return;
+  tableBody.innerHTML = '';
+  if (list.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-secondary py-4">No se encontraron roles.</td></tr>`;
+    return;
+  }
+  list.forEach(role => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="ps-4">${role.id}</td>
+      <td><strong>${role.nombre}</strong></td>
+      <td class="text-end pe-4">
+        <button class="btn btn-outline-secondary btn-sm me-1 edit-btn">✏️</button>
+        <button class="btn btn-outline-danger btn-sm delete-btn">🗑️</button>
+      </td>
+    `;
+    tr.querySelector('.edit-btn').addEventListener('click', () => openRolModal(role.id));
+    tr.querySelector('.delete-btn').addEventListener('click', () => deleteRol(role.id));
+    tableBody.appendChild(tr);
+  });
+}
+
+function filterRoles() {
+  const query = $('searchRol').value.toLowerCase().trim();
+  const filtered = state.roles.filter(role => role.nombre.toLowerCase().includes(query));
+  renderRoles(filtered);
+}
+
+function openRolModal(id = null) {
+  const form = $('rolForm');
+  if (form) form.reset();
+  $('rolId').value = '';
+  const validId = (id && typeof id !== 'object') ? id : null;
+  $('rolModalTitle').textContent = validId ? 'Editar Rol' : 'Crear Rol';
+  if (validId) {
+    const role = state.roles.find(r => r.id === validId);
+    if (role) {
+      $('rolId').value = role.id;
+      $('rolNombre').value = role.nombre;
+    }
+  }
+  $('rolModal')?.classList.add('active');
+}
+
+const closeRolModal = () => $('rolModal')?.classList.remove('active');
+
+async function handleRolSubmit(e) {
+  e.preventDefault();
+  const id = $('rolId').value;
+  const nombre = $('rolNombre').value.trim();
+  if (!nombre) {
+    return showToast('Formulario incompleto', 'Ingrese el nombre del rol.', 'warning');
+  }
+  const isEdit = !!id;
+  try {
+    await apiRequest(isEdit ? `/api/roles/${id}` : '/api/roles', {
+      method: isEdit ? 'PUT' : 'POST',
+      body: JSON.stringify({ nombre })
+    });
+    showToast(isEdit ? 'Rol actualizado' : 'Rol creado', `El rol ${nombre} se guardó correctamente.`);
+    closeRolModal();
+    getRoles();
+  } catch (error) {
+    showToast('Error al guardar rol', error.message, 'error');
+  }
+}
+
+async function deleteRol(id) {
+  const role = state.roles.find(r => r.id === id);
+  if (!role) return;
+  if (confirm(`¿Confirma eliminación del rol "${role.nombre}"?`)) {
+    try {
+      await apiRequest(`/api/roles/${id}`, { method: 'DELETE' });
+      showToast('Rol eliminado', `Se eliminó el rol ${role.nombre}.`);
+      getRoles();
+    } catch (error) {
+      showToast('Error al eliminar rol', error.message, 'error');
+    }
   }
 }
 
@@ -637,6 +889,45 @@ async function getReportes() {
   }
 }
 
+async function exportReportes() {
+  try {
+    if (!state.token) throw new Error('No autorizado');
+    const response = await fetch(`${API_URL}/api/reportes/inscripciones?export=csv`, {
+      headers: {
+        Authorization: `Bearer ${state.token}`
+      }
+    });
+
+    if (response.status === 401) {
+      showToast('Sesión Caducada', 'Inicie sesión de nuevo', 'warning');
+      handleLogout();
+      return;
+    }
+    if (response.status === 403) {
+      const payload = await response.json().catch(() => null);
+      showToast('Acceso Denegado', payload?.mensaje || 'No tiene permisos para exportar', 'warning');
+      return;
+    }
+    if (!response.ok) {
+      const payload = await response.json().catch(() => null);
+      throw new Error(payload?.mensaje || 'Error al exportar reportes');
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inscripciones-reportes.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Exportación descargada', 'El archivo CSV se descargó correctamente.', 'success');
+  } catch (error) {
+    showToast('Error de exportación', error.message, 'error');
+  }
+}
+
 function renderReportes(reportes) {
   const statsContainer = $('statsSummaryContainer');
   const tableBody = $('reportesTableBody');
@@ -732,3 +1023,11 @@ window.closeEventoModal = closeEventoModal;
 window.editEvento = openEventoModal;
 window.deleteEvento = deleteEvento;
 window.cancelRegistration = cancelRegistration;
+window.openUsuarioModal = openUsuarioModal;
+window.closeUsuarioModal = closeUsuarioModal;
+window.editUsuario = openUsuarioModal;
+window.deleteUsuario = deleteUsuario;
+window.openRolModal = openRolModal;
+window.closeRolModal = closeRolModal;
+window.editRol = openRolModal;
+window.deleteRol = deleteRol;
