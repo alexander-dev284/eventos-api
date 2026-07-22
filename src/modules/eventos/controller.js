@@ -10,7 +10,6 @@ export async function listarEventos(req, res) {
     let query = `SELECT ${CAMPOS} FROM eventos`;
     const params = [];
     
-    // Filtro por fecha si se provee
     if (fecha) {
       query += ` WHERE eve_fecha_inicio::date = $1`;
       params.push(fecha);
@@ -21,7 +20,6 @@ export async function listarEventos(req, res) {
     
     const eventos = await db.any(query, params);
     
-    // Conteo total para paginación
     const totalQuery = fecha ? `SELECT COUNT(*) FROM eventos WHERE eve_fecha_inicio::date = $1` : `SELECT COUNT(*) FROM eventos`;
     const totalParams = fecha ? [fecha] : [];
     const { count } = await db.one(totalQuery, totalParams);
@@ -44,20 +42,17 @@ export async function crearEvento(req, res) {
   try {
     const { nombre, fecha_inicio, capacidad, ubicacion } = req.body;
 
-    // Validación de campos obligatorios
     if (!nombre || !fecha_inicio || capacidad === undefined || !ubicacion) {
       return res.status(400).json({ mensaje: 'nombre, fecha_inicio, capacidad y ubicacion son requeridos' });
     }
 
-    // Validar cupo > 0
     if (Number(capacidad) <= 0) {
       return res.status(400).json({ mensaje: 'La capacidad (cupo) debe ser mayor a 0' });
     }
 
-    // Validar fecha coherente (no en el pasado)
     const fechaEvento = new Date(fecha_inicio);
     const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0); // Ignorar la hora para comparar solo fecha
+    hoy.setHours(0, 0, 0, 0);
     
     if (fechaEvento < hoy) {
       return res.status(400).json({ mensaje: 'La fecha de inicio no puede estar en el pasado' });
@@ -80,12 +75,10 @@ export async function editarEvento(req, res) {
   try {
     const { nombre, fecha_inicio, capacidad, ubicacion } = req.body;
     
-    // Validar cupo > 0 si lo envian
     if (capacidad !== undefined && Number(capacidad) <= 0) {
       return res.status(400).json({ mensaje: 'La capacidad (cupo) debe ser mayor a 0' });
     }
 
-    // Validar fecha coherente si la envian
     if (fecha_inicio) {
       const fechaEvento = new Date(fecha_inicio);
       const hoy = new Date();
@@ -122,7 +115,6 @@ export async function eliminarEvento(req, res) {
     const eventId = parseInt(req.params.id, 10);
     const force = req.query.force === 'true' || req.query.force === '1';
 
-    // Check if there are asistencias for this event
     const { count: asistCount } = await db.one(
       'SELECT COUNT(*)::int AS count FROM asistencias WHERE ase_eve_id = $1 AND ase_estado != $2',
       [eventId, 'Cancelado']
@@ -132,7 +124,6 @@ export async function eliminarEvento(req, res) {
       return res.status(409).json({ mensaje: 'No se puede eliminar: el evento tiene inscripciones registradas. Use ?force=true para forzar la eliminación (eliminará las inscripciones relacionadas).' });
     }
 
-    // If force, perform cleanup in a transaction: delete asistencias for the event, remove orphan registros, then delete event
     if (force) {
       await db.tx(async (t) => {
         await t.none('DELETE FROM asistencias WHERE ase_eve_id = $1', [eventId]);
@@ -147,7 +138,6 @@ export async function eliminarEvento(req, res) {
       return res.status(204).send();
     }
 
-    // Non-force delete (no asistencias) — normal delete
     const resultado = await db.result('DELETE FROM eventos WHERE eve_id = $1', [eventId]);
     if (resultado.rowCount === 0) {
       return res.status(404).json({ mensaje: 'Evento no encontrado' });
