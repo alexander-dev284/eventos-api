@@ -892,7 +892,7 @@ async function getReportes() {
 async function exportReportes() {
   try {
     if (!state.token) throw new Error('No autorizado');
-    const response = await fetch(`${API_URL}/api/reportes/inscripciones?export=csv`, {
+    const response = await fetch(`${API_URL}/api/reportes/inscripciones?export=xlsx`, {
       headers: {
         Authorization: `Bearer ${state.token}`
       }

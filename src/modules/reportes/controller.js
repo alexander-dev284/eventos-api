@@ -1,50 +1,58 @@
 import { db } from '../../config/database.js';
+import XLSX from 'xlsx';
 
 function escapeCsvValue(value) {
   const text = value === null || value === undefined ? '' : String(value);
   return `"${text.replace(/"/g, '""')}"`;
 }
 
-function buildCsv(rows) {
-  if (!rows || rows.length === 0) {
-    return 'evento_id,evento_nombre,evento_fecha_inicio,evento_ubicacion,capacidad_total,asistencia_id,asistente_id,asistente_nombre,asistente_identificacion,asistente_email,fecha_registro,estado_asistencia\n';
-  }
+function formatCsvDate(value) {
+  if (value === null || value === undefined || value === '') return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString('es-ES', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).replace(',', '');
+}
 
+function buildCsv(rows) {
   const headers = [
-    'evento_id',
-    'evento_nombre',
-    'evento_fecha_inicio',
-    'evento_ubicacion',
-    'capacidad_total',
-    'asistencia_id',
-    'asistente_id',
-    'asistente_nombre',
-    'asistente_identificacion',
-    'asistente_email',
-    'fecha_registro',
-    'estado_asistencia'
+    'Evento ID',
+    'Evento',
+    'Fecha Inicio',
+    'Ubicación',
+    'Capacidad',
+    'Inscritos',
+    'Disponibles',
+    'Ocupación %',
+    'Asistentes registrados'
   ];
 
-  const lines = [headers.join(',')];
-  rows.forEach(row => {
-    const line = [
-      escapeCsvValue(row.evento_id),
-      escapeCsvValue(row.evento_nombre),
-      escapeCsvValue(row.evento_fecha_inicio),
-      escapeCsvValue(row.evento_ubicacion),
-      escapeCsvValue(row.capacidad_total),
-      escapeCsvValue(row.asistencia_id),
-      escapeCsvValue(row.asistente_id),
-      escapeCsvValue(row.asistente_nombre),
-      escapeCsvValue(row.asistente_identificacion),
-      escapeCsvValue(row.asistente_email),
-      escapeCsvValue(row.fecha_registro),
-      escapeCsvValue(row.estado_asistencia)
-    ];
-    lines.push(line.join(','));
-  });
+  const lines = [headers.join(';')];
 
-  return lines.join('\n');
+  if (rows && rows.length > 0) {
+    rows.forEach(row => {
+      const line = [
+        escapeCsvValue(row.evento_id),
+        escapeCsvValue(row.evento_nombre),
+        escapeCsvValue(formatCsvDate(row.evento_fecha_inicio)),
+        escapeCsvValue(row.evento_ubicacion),
+        escapeCsvValue(row.capacidad_total),
+        escapeCsvValue(row.inscritos_reales),
+        escapeCsvValue(row.cupos_disponibles),
+        escapeCsvValue(row.porcentaje_ocupacion),
+        escapeCsvValue(row.asistentes_registrados)
+      ];
+      lines.push(line.join(';'));
+    });
+  }
+
+  return '\ufeff' + lines.join('\r\n');
 }
 
 /**
@@ -71,7 +79,7 @@ export async function reporteInscripciones(req, res) {
       baseWhere.push(`e.eve_fecha_inicio::date = $${baseParams.length}`);
     }
 
-    if (exportType === 'csv') {
+    if (exportType === 'csv' || exportType === 'xlsx') {
       let csvQuery = `
         SELECT
           e.eve_id AS evento_id,
@@ -99,10 +107,49 @@ export async function reporteInscripciones(req, res) {
       csvQuery += ` ORDER BY e.eve_fecha_inicio DESC, a.asi_nombre ASC`;
 
       const rows = await db.any(csvQuery, baseParams);
-      const csv = buildCsv(rows);
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', 'attachment; filename="inscripciones-reportes.csv"');
-      return res.send(csv);
+
+      if (exportType === 'csv') {
+        const csv = buildCsv(rows);
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="inscripciones-reportes.csv"');
+        return res.send(csv);
+      }
+
+      const workbook = XLSX.utils.book_new();
+      const data = rows.map(row => ({
+        'Evento ID': row.evento_id,
+        'Evento': row.evento_nombre,
+        'Fecha Inicio': formatCsvDate(row.evento_fecha_inicio),
+        'Ubicación': row.evento_ubicacion,
+        'Capacidad': row.capacidad_total,
+        'Asistencia ID': row.asistencia_id,
+        'Asistente ID': row.asistente_id,
+        'Asistente': row.asistente_nombre,
+        'Cédula': row.asistente_identificacion,
+        'Email': row.asistente_email,
+        'Fecha Registro': formatCsvDate(row.fecha_registro),
+        'Estado Asistencia': row.estado_asistencia
+      }));
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      worksheet['!cols'] = [
+        { wch: 12 },
+        { wch: 30 },
+        { wch: 20 },
+        { wch: 24 },
+        { wch: 10 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 28 },
+        { wch: 28 },
+        { wch: 20 },
+        { wch: 18 }
+      ];
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename="inscripciones-reportes.xlsx"');
+      return res.send(buffer);
     }
 
     let query = `

@@ -6,11 +6,13 @@ CREATE TABLE IF NOT EXISTS roles (
     rol_id SERIAL PRIMARY KEY,
     rol_nombre VARCHAR(50) NOT NULL UNIQUE
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_roles_rol_nombre ON roles(rol_nombre);
 
 CREATE TABLE IF NOT EXISTS funciones (
     fun_id SERIAL PRIMARY KEY,
-    fun_nombre VARCHAR(100) NOT NULL
+    fun_nombre VARCHAR(100) NOT NULL UNIQUE
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_funciones_fun_nombre ON funciones(fun_nombre);
 
 -- Tabla intermedia para el menú dinámico
 CREATE TABLE IF NOT EXISTS roles_funciones (
@@ -20,6 +22,7 @@ CREATE TABLE IF NOT EXISTS roles_funciones (
     FOREIGN KEY (rof_rol_id) REFERENCES roles(rol_id) ON DELETE CASCADE,
     FOREIGN KEY (rof_fun_id) REFERENCES funciones(fun_id) ON DELETE CASCADE
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_roles_funciones_rol_fun ON roles_funciones(rof_rol_id, rof_fun_id);
 
 CREATE TABLE IF NOT EXISTS usuarios (
     usu_id SERIAL PRIMARY KEY,
@@ -83,7 +86,7 @@ INSERT INTO funciones (fun_nombre) VALUES
 ('Reportes'),
 ('CRUD Usuarios'),
 ('CRUD Roles')
-ON CONFLICT DO NOTHING;
+ON CONFLICT (fun_nombre) DO NOTHING;
 
 INSERT INTO roles_funciones (rof_rol_id, rof_fun_id) 
 SELECT 1, fun_id FROM funciones WHERE fun_nombre IN ('CRUD Asistentes', 'CRUD Eventos', 'Registro Transaccional', 'Reportes', 'CRUD Usuarios', 'CRUD Roles')
